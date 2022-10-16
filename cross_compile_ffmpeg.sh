@@ -1608,7 +1608,7 @@ build_svt-hevc() {
 }
 
 build_svt-av1() {
-  do_git_checkout https://github.com/OpenVisualCloud/SVT-AV1.git
+  do_git_checkout https://gitlab.com/AOMediaCodec/SVT-AV1.git
   cd SVT-AV1_git
   cd Build
     do_cmake_from_build_dir .. "-DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=AMD64"
@@ -1633,7 +1633,7 @@ build_vidstab() {
 }
 
 build_libmysofa() {
-  do_git_checkout https://github.com/hoene/libmysofa.git libmysofa_git
+  do_git_checkout https://github.com/hoene/libmysofa.git libmysofa_git "origin/main"
   cd libmysofa_git
     local cmake_params="-DBUILD_TESTS=0"
     if [[ $compiler_flavors == "native" ]]; then
@@ -2381,7 +2381,7 @@ build_ffmpeg() {
         else
           git apply "$work_dir/SVT-HEVC_git/ffmpeg_plugin/master-0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch"
         fi
-        config_options+=" --enable-libsvthevc"
+        # config_options+=" --enable-libsvthevc"
         config_options+=" --enable-libsvtav1"
         # config_options+=" --enable-libsvtvp9"
         #aom must be disabled to use SVT-AV1, just below
@@ -2664,7 +2664,17 @@ build_ffmpeg_dependencies() {
   build_libx264 # at bottom as it might internally build a copy of ffmpeg (which needs all the above deps...
  }
 
+build_fftools_lib() {
+  cd fftools_lib
+    export CMAKE_STATIC_LINKER_FLAGS='-lws2_32 -pthread'
+    do_cmake ' -Wno-dev -DBUILD_CLAR=OFF'
+    do_make
+  cd ..
+}
+
 build_apps() {
+  build_fftools_lib
+
   if [[ $build_dvbtee = "y" ]]; then
     build_dvbtee_app
   fi
